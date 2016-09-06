@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>jenny</name>
+  <version>1.0.0</version>
+
+  <description>
+    Divide by Zero Autonomous Grocery Cart (Jenny)
+    This package provides core Jenny ROS bundle.
+  </description>
+
+  <author email="william.g.coon@gmail.com">Bill Coon</author>
+  <author email="robin.knight@roadnarrows.com">Robin Knight</author>
+  <maintainer email="william.g.coon@gmail.com">Bill Coon</maintainer>
+  <maintainer email="robin.knight@roadnarrows.com">Robin Knight</maintainer>
+  <license>MIT</license>
+
+  <url type="website">https://github.com/roadnarrows-roboits/jenny</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend></run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+
+</package>
