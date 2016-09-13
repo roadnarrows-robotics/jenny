@@ -1,0 +1,15 @@
+# 
+# Jenny udev rules
+#
+
+# USB IMU device
+ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",MODE="666",SYMLINK+="imu"
+
+#
+# Supported Cameras
+#
+
+# Front Creative USB 2.0 720p web camera with microphone.
+KERNEL=="video[0-9]*",ATTRS{idVendor}=="041e",ATTRS{idProduct}=="4097",MODE="666",SYMLINK+="fcam"
+
+

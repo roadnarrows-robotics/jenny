@@ -1,0 +1,92 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:       roscore
+# Required-Start: $remote_fs $syslog
+# Required-Stop:  $remote_fs $syslog
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description: Jenny roscore ROS master services.
+# Description:    Jenny ROS master services. roscore is a collection
+#                 of nodes and programs that are pre-requisites of a ROS-based
+#                 system. Each Jenny, by default, is a ROS master.
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+
+. /etc/profile.d/jenny
+
+ROSCORE=roscore
+
+DAEMON=`which ${ROSCORE}`
+PIDFILE=/var/run/${ROSCORE}.pid
+LOGFILE=/var/log/${ROSCORE}.log
+
+test -x ${DAEMON} || exit 0
+
+#
+# Start service
+#
+startdaemon()
+{
+  echo -n "Starting roscore... "
+  start-stop-daemon --start -x ${DAEMON} --pidfile ${PIDFILE} --make-pidfile --background
+  echo "  done"
+}
+
+#
+# Stop service
+#
+stopdaemon()
+{
+  echo -n "Stopping roscore... "
+  start-stop-daemon --stop --pidfile ${PIDFILE}
+  echo "done"
+}
+
+#
+# Status
+#
+# roscore is a set of processes started by python. Cannot simply do the pidof
+# approach.
+#
+pidof_daemon() {
+  if [ -e "${PIDFILE}" ]
+  then
+    PID=$(cat ${PIDFILE})
+    ps ${PID} | grep -q ${ROSCORE}
+    return $?
+  fi
+  return 1
+}
+
+case $1 in
+  start)
+    startdaemon
+    ;;
+  stop)
+    stopdaemon
+    ;;
+  restart|force-reload)
+    $0 stop && sleep 2 && $0 start
+    ;;
+  status)
+    if pidof_daemon
+    then
+      echo "${ROSCORE} running, process ${PID}"
+    else
+      echo "${ROSCORE} not running"
+      if [ -e "${PIDFILE}" ]
+      then
+        exit 1  # program is dead and pid file exists.
+      else
+        exit 3  # program is not running
+      fi
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|force-reload|status}"
+    exit 1
+    ;;
+esac
+
+exit 0 # good

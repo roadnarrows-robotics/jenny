@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <name>libjenny</name>
+  <version>1.0.0</version>
+  <description>Provides jenny interface.</description>
+
+  <license>MIT</license>
+
+  <url type="website">http://github.com/roadnarrows-robotics/jenny</url>
+  <author email="william.g.coon@gmail.com">Bill Coon</author>
+  <author email="robin.knight@roadnarrows.com">Robin Knight</author>
+  <maintainer email="william.g.coon@gmail.com">Bill Coon</maintainer>
+  <maintainer email="robin.knight@roadnarrows.com">Robin Knight</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>control_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>actionlib</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>control_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+</package>
