@@ -36,6 +36,7 @@
 #include "rnr/log.h"
 #include "rnr/serdev.h"
 
+#include "jenny/jenny.h"
 
 //
 // Limits and Ids

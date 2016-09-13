@@ -35,7 +35,9 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${RN_LOGGING_COMPILE_FLAGS}")
 #message(DBG: ${CMAKE_CXX_FLAGS})
 
 add_library(jenny
+  src/naze32imu.cxx
   src/rs160d.cxx
+  src/utils.cxx
 )
 
 target_link_libraries(jenny 

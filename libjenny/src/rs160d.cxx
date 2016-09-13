@@ -27,6 +27,7 @@
 #include "rnr/rnrconfig.h"
 #include "rnr/log.h"
 
+#include "jenny/jenny.h"
 #include "jenny/rs160d.h"
 
 static int   KMotDevCnt = 0;
