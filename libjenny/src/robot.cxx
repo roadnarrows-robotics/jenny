@@ -89,7 +89,7 @@ JennyRobot::JennyRobot()
 
   // state
   m_bIsConnected      = false;
-  m_eRobotMode        = JennyRobotModeUnknown;
+  m_eRobotMode        = JenRobotModeUnknown;
   m_bIsEStopped       = false;
   m_bAlarmState       = false;
 
@@ -126,7 +126,7 @@ int JennyRobot::connect()
   // Initialize robot status.
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   m_bIsConnected      = false;
-  m_eRobotMode        = JennyRobotModeUnknown;
+  m_eRobotMode        = JenRobotModeUnknown;
   m_bIsEStopped       = false;
   m_bAlarmState       = false;
 
@@ -186,7 +186,7 @@ int JennyRobot::connect()
   else
   {
     m_bIsConnected      = true;
-    m_eRobotMode        = JennyRobotModeAuto;
+    m_eRobotMode        = JenRobotModeAuto;
     m_bIsEStopped       = false;
     m_bAlarmState       = false;
 
@@ -218,7 +218,7 @@ int JennyRobot::disconnect()
 
   // reset robot state
   m_bIsConnected      = false;
-  m_eRobotMode        = JennyRobotModeUnknown;
+  m_eRobotMode        = JenRobotModeUnknown;
   m_bIsEStopped       = false;
   m_bAlarmState       = false;
 
@@ -291,7 +291,7 @@ int JennyRobot::release()
 
   freeze();
 
-  RS160AlterBraking(RS160D_MOTOR_BRAKE_MIN, m_fdMotorCtlr,
+  RS160DAlterBraking(RS160D_MOTOR_BRAKE_MIN, m_fdMotorCtlr,
       RS160D_MOTOR_LEFT_ID);
   RS160DAlterBraking(RS160D_MOTOR_BRAKE_MIN, m_fdMotorCtlr,
       RS160D_MOTOR_RIGHT_ID);
@@ -351,7 +351,7 @@ double JennyRobot::getGovernor()
   return m_fGovernor;
 }
 
-void JennyRobot::setRobotMode(JennyRobotMode eRobotMode)
+void JennyRobot::setRobotMode(JenRobotMode eRobotMode)
 {
   m_eRobotMode = eRobotMode;
 }
@@ -385,7 +385,7 @@ void JennyRobot::getVersion(int &nVerMajor, int &nVerMinor, int &nRevision)
   nRevision = 0;
 }
 
-JennyRobotMode JennyRobot::getRobotMode()
+JenRobotMode JennyRobot::getRobotMode()
 {
   return m_eRobotMode;
 }
@@ -433,7 +433,7 @@ int JennyRobot::connMotorController(const std::string &strDevMotorCtlr)
 
   if( m_fdMotorCtlr < 0 )
   {
-    LOGSYSERROR(strDevMotorCtlr.c_str());
+    LOGSYSERROR("%s", strDevMotorCtlr.c_str());
     rc = -JEN_ECODE_NO_DEV; 
   }
 

@@ -1,0 +1,6 @@
+### Laelaps laelaps_control/Stop service
+#
+# Stop robot. Motors are still driven.
+#
+
+---

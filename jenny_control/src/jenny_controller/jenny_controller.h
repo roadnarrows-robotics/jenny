@@ -43,8 +43,7 @@
 #include "geometry_msgs/Quaternion.h"
 #include "industrial_msgs/TriState.h"
 #include "industrial_msgs/RobotStatus.h"
-#include "sensor_msgs/Illuminance.h"
-#include "sensor_msgs/Imu.h"
+#include "sensor_msgs/Joy.h"
 
 //
 // ROS generated Jenny messages.
@@ -201,18 +200,6 @@ namespace jenny_controller
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
     /*!
-     * \brief Get inertia measurement unit's latest sensed data service
-     * callback.
-     *
-     * \param req   Service request.
-     * \param rsp   Service response.
-     *
-     * \return Returns true on success, false on failure.
-     */
-    bool getImu(jenny_control::GetImu::Request  &req,
-                jenny_control::GetImu::Response &rsp);
-
-    /*!
      * \brief Set robot's manual/auto mode service callback.
      *
      * \param req   Service request.
@@ -255,15 +242,16 @@ namespace jenny_controller
      */
     void publishRobotStatus();
 
-    /*!
-     * \brief Publish IMU sensor topics.
-     */
-    void publishImu();
-
-
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Subscribed Topic Callbacks
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+    /*!
+     * \brief Execute joystick (xbox) commands subscibed topic callback.
+     *
+     * \param msgVel  Velocity message.
+     */
+    void execJoy(const sensor_msgs::Joy &msgJoy);
 
     /*!
      * \brief Execute set velocities subscibed topic callback.

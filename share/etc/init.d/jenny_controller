@@ -1,0 +1,143 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:       jenny_controller
+# Required-Start: $remote_fs $syslog
+# Required-Stop:  $remote_fs $syslog
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description: The jenny_controller ROS node.
+# Description:    The jenny_controller ROS node provides all services to
+#                 operate and monitor the Jenny autonomous grocery cart.
+#                 It must run on target.
+### END INIT INFO
+
+if [ -f /etc/profile.d/jenny.sh ]
+then
+  . /etc/profile.d/jenny.sh
+elif [ -f /prj/etc/profile.d/jenny.sh ]
+then
+  . /prj/etc/profile.d/jenny.sh
+fi
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin:/bin"
+
+SERVICE=jenny_controller
+ROSPKG=jenny_controller
+ROSNODE=jenny_controller
+
+DAEMON=$(find_ros_node "${LD_LIBRARY_PATH}" ${ROSPKG} ${ROSNODE})
+PIDFILE=/var/run/${ROSNODE}.pid
+LOGFILE=/var/log/${ROSNODE}.log
+
+test -n "${DAEMON}" || exit 0
+test -x "${DAEMON}" || exit 0
+
+# standard init sh support functions
+. /lib/lsb/init-functions
+
+#
+# Test if daemon is running.
+#
+is_daemon_running()
+{
+  /bin/ps -ef | /bin/grep "${DAEMON}" 2>/dev/null | /bin/grep --quiet -v grep
+  return $?
+}
+
+#
+# Start service
+#
+startdaemon()
+{
+  if ! is_daemon_running
+  then
+    log_daemon_msg "Starting Jenny controller ROS node" "${ROSNODE}" || true
+    rm -f "${LOGFILE}"
+    if start-stop-daemon --start --quiet --exec ${DAEMON} --pidfile ${PIDFILE} --make-pidfile --background -- --log-no-color --log=diag2 --logfile=${LOGFILE}
+    then
+      log_end_msg 0 || true
+    else
+      log_end_msg 1 || true
+    fi
+  else
+    log_daemon_msg "Jenny controller ROS node already running" "" || true
+    log_end_msg 1 || true
+  fi
+}
+
+#
+# Stop service
+#
+stopdaemon()
+{
+  if is_daemon_running
+  then
+    log_daemon_msg "Stopping Jenny controller ROS node" "${ROSNODE}" || true
+    if start-stop-daemon --stop --quiet --oknodo --retry 30 --pidfile ${PIDFILE} $@
+    then
+      #/bin/rm -f "${PIDFILE}"
+      log_end_msg 0 || true
+    else
+      log_end_msg 1 || true
+    fi
+  else
+    log_daemon_msg "Jenny controller ROS node not running" "" || true
+    log_end_msg 1 || true
+  fi
+}
+
+#
+# Restart service
+#
+restartdaemon()
+{
+  stopdaemon
+  startdaemon
+}
+
+#
+# Reload service
+#
+reloaddaemon()
+{
+  stopdaemon
+  startdaemon
+}
+
+#
+# Status (not used)
+#
+pidof_daemon()
+{
+  if [ -e "${PIDFILE}" ]
+  then
+    PID=$(cat ${PIDFILE})
+    pidof ${ROSNODE} | grep -q "${PID}"
+    return $?
+  fi
+  return 1
+}
+
+case $1 in
+  start)
+    startdaemon
+    ;;
+  stop)
+    stopdaemon
+    ;;
+  restart)
+    restartdaemon
+    ;;
+  reload|force-reload)
+    reloaddaemon
+    ;;
+  status)
+	  status_of_proc -p "${PIDFILE}" "${DAEMON}" "${SERVICE}" && exit 0 || exit $?
+    ;;
+  *)
+    log_action_msg "Usage: $0 {start|stop|restart|reload|force-reload|status}" || true
+    exit 1
+    ;;
+esac
+
+exit 0  # good

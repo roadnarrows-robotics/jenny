@@ -171,7 +171,7 @@ int RS160DUpdateMotorSpeeds(int Speed, int Descriptor, int Side)
 
   if(Speed < RS160D_MOTOR_SPEED_MIN)
   {
-    LOGWARNj("Speed (%i) too low.", Speed);
+    LOGWARN("Speed (%i) too low.", Speed);
     Speed = RS160D_MOTOR_SPEED_MIN;
   }
 

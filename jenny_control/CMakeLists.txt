@@ -73,8 +73,8 @@ add_service_files(
   #  SetAuxPwr.srv
   #  SetDutyCycles.srv
   SetRobotMode.srv
-  #  SetVelocities.srv
-  #  Stop.srv
+  SetVelocities.srv
+  Stop.srv
   #  WriteGpio.srv
 )
 
@@ -107,10 +107,10 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
 )
 
-#add_executable(jenny_controller
-  #src/jenny_controller/jenny_control.cpp
-  #src/jenny_controller/jenny_control_main.cpp
-#)
+add_executable(jenny_controller
+  src/jenny_controller/jenny_controller.cpp
+  src/jenny_controller/jenny_controller_main.cpp
+)
 
 #add_executable(jenny_gps
   #src/jenny_control/jenny_gps.cpp
@@ -127,11 +127,11 @@ include_directories(
   #src/jenny_teleop/jenny_teleop_main.cpp
 #)
 
-#target_link_libraries(jenny_control 
-#  jenny
-#  ${rnr-jenny_LIBRARIES}
-#  ${catkin_LIBRARIES}
-#)
+target_link_libraries(jenny_controller
+  jenny
+  ${rnr-jenny_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
 
 #target_link_libraries(jenny_gps 
 #  jenny
@@ -151,7 +151,7 @@ include_directories(
 #  ${catkin_LIBRARIES}
 #)
 
-#add_dependencies(jenny_control jenny_control_gencpp)
+add_dependencies(jenny_controller jenny_control_gencpp)
 #add_dependencies(jenny_gps jenny_control_gencpp)
 #add_dependencies(jenny_imu jenny_control_gencpp)
 #add_dependencies(jenny_teleop jenny_control_gencpp)

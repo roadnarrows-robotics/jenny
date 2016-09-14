@@ -176,9 +176,9 @@ namespace jenny
     /*!
      * \brief Set robot's operational mode.
      *
-     * \param eRobotMode Robot operation mode. See \ref JennyRobotMode.
+     * \param eRobotMode Robot operation mode. See \ref JenRobotMode.
      */
-    void setRobotMode(JennyRobotMode eRobotMode);
+    void setRobotMode(JenRobotMode eRobotMode);
 
     /*!
      * \brief Attempt to clear all alarms.
@@ -219,9 +219,9 @@ namespace jenny
     /*!
      * \brief Get robot's operational mode.
      *
-     * \return Robot operation mode. See \ref JennyRobotMode.
+     * \return Robot operation mode. See \ref JenRobotMode.
      */
-    JennyRobotMode getRobotMode();
+    JenRobotMode getRobotMode();
 
     /*!
      * \brief Test if robot is current emergency stopped.
@@ -264,7 +264,7 @@ namespace jenny
   protected:
     // state
     bool            m_bIsConnected;     ///< critical hardware [not] connected
-    JennyRobotMode  m_eRobotMode;       ///< robot operating mode
+    JenRobotMode    m_eRobotMode;       ///< robot operating mode
     bool            m_bIsEStopped;      ///< robot is [not] emergency stopped
     bool            m_bAlarmState;      ///< robot is [not] alarmed
     double          m_fGovernor;        ///< speed limit governor setting

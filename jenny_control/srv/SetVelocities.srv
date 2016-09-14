@@ -1,0 +1,8 @@
+### Jenny jenny_controller/SetVelocities service
+#
+# Set robot's wheel velocities
+#
+
+Velocity  goal    # goal velocities
+---
+Velocity  actual  # actual achievable

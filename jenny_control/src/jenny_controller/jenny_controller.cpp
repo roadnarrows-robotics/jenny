@@ -48,7 +48,7 @@
 #include "geometry_msgs/Quaternion.h"
 #include "industrial_msgs/TriState.h"
 #include "industrial_msgs/RobotStatus.h"
-#include "sensor_msgs/Imu.h"
+#include "sensor_msgs/Joy.h"
 
 //
 // ROS generated Jenny messages.
@@ -87,6 +87,7 @@
 
 using namespace std;
 using namespace jenny;
+using namespace jenny_control;
 using namespace jenny_controller;
 
 /*! zero covariance matrix */
@@ -115,11 +116,6 @@ void JennyController::advertiseServices()
 {
   string  strSvc;
 
-  strSvc = "get_imu";
-  m_services[strSvc] = m_nh.advertiseService(strSvc,
-                                          &JennyController::getImu,
-                                          &(*this));
-
   strSvc = "set_robot_mode";
   m_services[strSvc] = m_nh.advertiseService(strSvc,
                                           &JennyController::setRobotMode,
@@ -136,60 +132,8 @@ void JennyController::advertiseServices()
                                           &(*this));
 }
 
-bool JennyController::getImu(GetImu::Request  &req,
-                            GetImu::Response &rsp)
-{
-  const char *svc = "get_imu";
-
-  double                    accel[ImuAlt::NUM_AXES];
-  double                    gyro[ImuAlt::NUM_AXES];
-  double                    rpy[ImuAlt::NUM_AXES];
-  sensor::imu::Quaternion   q;
-  int                       rc;
-
-  ROS_DEBUG("%s/%s", m_nh.getNamespace().c_str(), svc);
-
-  rc = m_robot.getImu(accel, gyro, rpy, q);
-
-  if( rc == LAE_OK )
-  {
-    rsp.imu.orientation.x = q.m_x;
-    rsp.imu.orientation.y = q.m_y;
-    rsp.imu.orientation.z = q.m_z;
-    rsp.imu.orientation.w = q.m_w;
-
-    // for now until known
-    rsp.imu.orientation_covariance = ZeroCovariance;
-
-    rsp.imu.angular_velocity.x = gyro[sensor::imu::X];
-    rsp.imu.angular_velocity.y = gyro[sensor::imu::Y];
-    rsp.imu.angular_velocity.z = gyro[sensor::imu::Z];
-
-    // for now until known
-    rsp.imu.angular_velocity_covariance = ZeroCovariance;
-
-    rsp.imu.linear_acceleration.x = accel[sensor::imu::X];
-    rsp.imu.linear_acceleration.y = accel[sensor::imu::Y];
-    rsp.imu.linear_acceleration.z = accel[sensor::imu::Z];
-
-    // for now until known
-    rsp.imu.linear_acceleration_covariance = ZeroCovariance;
-
-    stampHeader(rsp.imu.header, 0);
-
-    ROS_INFO("IMU %s data.", req.name.c_str());
-    return true;
-  }
-  else
-  {
-    ROS_ERROR("Service %s failed on IMU %s: %s(rc=%d).",
-          svc, req.name.c_str(), getStrError(rc), rc);
-    return false;
-  }
-}
-
 bool JennyController::setRobotMode(SetRobotMode::Request  &req,
-                                  SetRobotMode::Response &rsp)
+                                   SetRobotMode::Response &rsp)
 {
   const char *svc = "set_robot_mode";
 
@@ -203,23 +147,17 @@ bool JennyController::setRobotMode(SetRobotMode::Request  &req,
 }
 
 bool JennyController::setVelocities(SetVelocities::Request  &req,
-                                   SetVelocities::Response &rsp)
+                                    SetVelocities::Response &rsp)
 {
   const char     *svc = "set_velocities";
   static u32_t    seq = 0;
-  LaeMapVelocity  vel;
   int             rc;
 
   ROS_DEBUG("%s/%s", m_nh.getNamespace().c_str(), svc);
 
-  for(size_t i = 0; i < req.goal.names.size(); ++i)
-  {
-    vel[req.goal.names[i]] = req.goal.velocities[i];
-  }
-
-  rc = m_robot.move(vel);
+  rc = m_robot.move(req.goal.names, req.goal.velocities);
  
-  if( rc == LAE_OK )
+  if( rc == JEN_OK )
   {
     stampHeader(rsp.actual.header, seq++);
     
@@ -227,12 +165,7 @@ bool JennyController::setVelocities(SetVelocities::Request  &req,
     rsp.actual = req.goal;
 
     ROS_INFO("Robot velocities set.");
-    for(size_t i = 0; i < rsp.actual.names.size(); ++i)
-    {
-      ROS_INFO(" %-12s: vel=%7.2lfdeg/s",
-          rsp.actual.names[i].c_str(),
-          radToDeg(rsp.actual.velocities[i]));
-    }
+
     return true;
   }
   else
@@ -253,7 +186,7 @@ bool JennyController::stop(Stop::Request  &req,
 
   rc = m_robot.stop();
 
-  if( rc == LAE_OK )
+  if( rc == JEN_OK )
   {
     ROS_INFO("Stopped.");
     return true;
@@ -273,11 +206,6 @@ void JennyController::advertisePublishers(int nQueueDepth)
 {
   string  strPub;
 
-  // topic conforms to the robot_pose_ekf ROS node
-  strPub = "imu_data";
-  m_publishers[strPub] =
-    m_nh.advertise<sensor_msgs::Imu>(strPub, nQueueDepth);
-
   strPub = "robot_status";
   m_publishers[strPub] =
     m_nh.advertise<industrial_msgs::RobotStatus>(strPub, nQueueDepth);
@@ -286,7 +214,6 @@ void JennyController::advertisePublishers(int nQueueDepth)
 void JennyController::publish()
 {
   publishRobotStatus();
-  publishSensorImu();
 }
 
 void JennyController::publishRobotStatus()
@@ -300,9 +227,10 @@ void JennyController::publishRobotStatus()
   //updateRobotStatusMsg(status, m_msgRobotStatus);
 
   // publish robot status message
-  m_publishers["robot_status"].publish(m_msgRobotStatus);
+  //m_publishers["robot_status"].publish(m_msgRobotStatus);
 }
 
+#if 0 // RDK
 void JennyController::updateRobotStatusMsg(JennyRobotStatus &status,
                                           industrial_msgs::RobotStatus &msg)
 {
@@ -323,56 +251,7 @@ void JennyController::updateRobotStatusMsg(JennyRobotStatus &status,
   msg.error_code          = status.m_nErrorCode;
 
 }
-
-void JennyController::publishImu()
-{
-  double                    accel[ImuAlt::NUM_AXES];
-  double                    gyro[ImuAlt::NUM_AXES];
-  double                    rpy[ImuAlt::NUM_AXES];
-  sensor::imu::Quaternion   q;
-  int                       rc;
-
-  //
-  // Grab latest IMU data
-  //
-  if( (rc = m_robot.getImu(accel, gyro, rpy, q)) != LAE_OK )
-  {
-    return;
-  }
-
-  //
-  // Convert to ROS standard IMU message
-  //
-  m_msgImu.orientation.x = q.m_x;
-  m_msgImu.orientation.y = q.m_y;
-  m_msgImu.orientation.z = q.m_z;
-  m_msgImu.orientation.w = q.m_w;
-
-    // for now until known
-  m_msgImu.orientation_covariance = ZeroCovariance;
-
-  m_msgImu.angular_velocity.x = gyro[sensor::imu::X];
-  m_msgImu.angular_velocity.y = gyro[sensor::imu::Y];
-  m_msgImu.angular_velocity.z = gyro[sensor::imu::Z];
-
-    // for now until known
-  m_msgImu.angular_velocity_covariance = ZeroCovariance;
-
-  m_msgImu.linear_acceleration.x = accel[sensor::imu::X];
-  m_msgImu.linear_acceleration.y = accel[sensor::imu::Y];
-  m_msgImu.linear_acceleration.z = accel[sensor::imu::Z];
-
-    // for now until known
-  m_msgImu.linear_acceleration_covariance = ZeroCovariance;
-
-  stampHeader(m_msgImu.header, m_msgImu.header.seq+1);
-
-  //
-  // Publish messages
-  //
-  m_publishers["imu_data"].publish(m_msgImu);
-}
-
+#endif // RDK
 
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 // Subscribed Topics
@@ -382,16 +261,64 @@ void JennyController::subscribeToTopics(int nQueueDepth)
 {
   string  strSub;
 
+  strSub = "Joy";
+  m_subscriptions[strSub] = m_nh.subscribe(strSub, nQueueDepth,
+                                          &JennyController::execJoy,
+                                          &(*this));
+
   strSub = "cmd_velocities";
   m_subscriptions[strSub] = m_nh.subscribe(strSub, nQueueDepth,
                                           &JennyController::execSetVelocities,
                                           &(*this));
 }
 
+void JennyController::execJoy(const sensor_msgs::Joy &msgJoy)
+{
+  const char     *topic = "joy";
+
+  double          velLinear, velAngular;
+  double          velLeft, velRight;
+  double          div;
+  vector<string>  names;
+  vector<double>  velocities;
+
+  ROS_DEBUG("%s/%s", m_nh.getNamespace().c_str(), topic);
+
+  velLinear   = msgJoy.axes[1];
+  velAngular  = msgJoy.axes[3];
+
+  velLeft   = velLinear - velAngular;
+  velRight  = velLinear + velAngular;
+
+  // calculate divider
+  if( fabs(velLeft) > 1.0 )
+  {
+    div = fabs(velLeft);
+  }
+  else if( fabs(velRight) > 1.0 )
+  {
+    div = fabs(velRight);
+  }
+  else
+  {
+    div = 1.0;
+  }
+
+  // normalize speed [-1.0, 1.0]
+  velLeft  = fcap(velLeft/div,  -1.0, 1.0);
+  velRight = fcap(velRight/div, -1.0, 1.0);
+
+  names.push_back("left");
+  velocities.push_back(velLeft);
+  names.push_back("right");
+  velocities.push_back(velRight);
+
+  m_robot.move(names, velocities);
+}
+
 void JennyController::execSetVelocities(const jenny_control::Velocity &msgVel)
 {
   const char     *topic = "cmd_velocities";
-  LaeMapVelocity  vel;
 
   ROS_DEBUG("%s/%s", m_nh.getNamespace().c_str(), topic);
 
