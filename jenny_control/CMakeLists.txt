@@ -159,5 +159,6 @@ add_dependencies(jenny_controller jenny_control_gencpp)
 install(
   PROGRAMS 
     scripts/jenny_panel
+    script/jenny_gps.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
