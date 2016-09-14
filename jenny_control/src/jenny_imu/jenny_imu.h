@@ -4,20 +4,20 @@
 //
 // Link:      https://github.com/roadnarrows-robotics/jenny
 //
-// ROS Node:  jenny_controller
+// ROS Node:  jenny_imu
 //
-// File:      jenny_controller.cpp
+// File:      jenny_imu.cpp
 //
 /*! \file
  *
- * \brief The ROS jenny_controller node class implementation.
+ * \brief The ROS jenny_imu node class implementation.
  *
  * \author Robin Knight (robin.knight@roadnarrows.com)
  */
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _JENNY_CONTROLLER_H
-#define _JENNY_CONTROLLER_H
+#ifndef _JENNY_IMU_H
+#define _JENNY_IMU_H
 
 //
 // System
@@ -41,22 +41,15 @@
 //
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Quaternion.h"
-#include "industrial_msgs/TriState.h"
-#include "industrial_msgs/RobotStatus.h"
-#include "sensor_msgs/Illuminance.h"
 #include "sensor_msgs/Imu.h"
 
 //
 // ROS generated Jenny messages.
 //
-#include "jenny_control/Velocity.h"
 
 //
 // ROS generatated Jenny services.
 //
-#include "jenny_control/SetRobotMode.h"
-#include "jenny_control/SetVelocities.h"
-#include "jenny_control/Stop.h"
 
 //
 // ROS generated action servers.
@@ -73,14 +66,14 @@
 //
 #include "jenny/jenny.h"
 #include "jenny/utils.h"
-#include "jenny/robot.h"
+#include "jenny/naze32imu.h"
 
-namespace jenny_controller
+namespace jenny_imu
 {
   /*!
-   * \brief The class embodiment of the jenny_controller ROS node.
+   * \brief The class embodiment of the jenny_imu ROS node.
    */
-  class JennyController
+  class JennyImu
   {
   public:
     /*! map of ROS server services type */
@@ -101,32 +94,31 @@ namespace jenny_controller
      * \param nh  Bound node handle.
      * \param hz  Application nominal loop rate in Hertz.
      */
-    JennyController(ros::NodeHandle &nh, double hz);
+    JennyImu(ros::NodeHandle &nh, double hz);
 
     /*!
      * \brief Destructor.
      */
-    virtual ~JennyController();
+    virtual ~JennyImu();
 
     /*!
-     * \brief Connect to Jenny robot.
+     * \brief Connect to Jenny imu.
      *
      * \return Returns JEN_OK of success, \h_lt 0 on failure.
      */
-    int connect()
-    {
-      return m_robot.connect();
-    }
+    int connect();
 
     /*!
-     * \brief Disconnect from Jenny robot.
+     * \brief Disconnect from Jenny imu.
      *
      * \return Returns JEN_OK of success, \h_lt 0 on failure.
      */
-    int disconnect()
-    {
-      return m_robot.disconnect();
-    }
+    int disconnect();
+
+    /*!
+     * \brief Execute sense of IMU sensor.
+     */
+    void sense();
 
     /*!
      * \brief Advertise all server services.
@@ -173,19 +165,19 @@ namespace jenny_controller
     }
 
     /*!
-     * \brief Get bound embedded robot instance.
+     * \brief Get bound embedded imu instance.
      *
      * \return Robot instance.
      */
-    jenny::JennyRobot &getRobot()
+    sensor::imu::JennyImuCleanFlight &getImu()
     {
-      return m_robot;
+      return m_imu;
     }
 
   protected:
     ros::NodeHandle      &m_nh;     ///< the node handler bound to this instance
     double                m_hz;     ///< application nominal loop rate
-    jenny::JennyRobot     m_robot;  ///< real-time, Jenny autonmouse robot
+    sensor::imu::JennyImuCleanFlight  m_imu;  ///< IMU
 
     // ROS services, publishers, subscriptions.
     MapServices       m_services;       ///< server services
@@ -194,7 +186,7 @@ namespace jenny_controller
     MapSubscriptions  m_subscriptions;  ///< subscriptions
 
     // Messages for published data.
-    industrial_msgs::RobotStatus  m_msgRobotStatus; ///< robot status message
+    sensor_msgs::Imu  m_msgImu; ///< IMU message
 
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Service callbacks
@@ -209,51 +201,12 @@ namespace jenny_controller
      *
      * \return Returns true on success, false on failure.
      */
-    bool getImu(jenny_control::GetImu::Request  &req,
-                jenny_control::GetImu::Response &rsp);
-
-    /*!
-     * \brief Set robot's manual/auto mode service callback.
-     *
-     * \param req   Service request.
-     * \param rsp   Service response.
-     *
-     * \return Returns true on success, false on failure.
-     */
-    bool setRobotMode(jenny_control::SetRobotMode::Request  &req,
-                      jenny_control::SetRobotMode::Response &rsp);
-
-    /*!
-     * \brief Set angular velocities service callback.
-     *
-     * \param req   Service request.
-     * \param rsp   Service response.
-     *
-     * \return Returns true on success, false on failure.
-     */
-    bool setVelocities(jenny_control::SetVelocities::Request  &req,
-                       jenny_control::SetVelocities::Response &rsp);
-
-    /*!
-     * \brief Stop a set of joints robot service callback.
-     *
-     * \param req   Service request.
-     * \param rsp   Service response.
-     *
-     * \return Returns true on success, false on failure.
-     */
-    bool stop(jenny_control::Stop::Request  &req,
-              jenny_control::Stop::Response &rsp);
-
+    //bool getImuData(jenny_control::GetImu::Request  &req,
+    //               jenny_control::GetImu::Response &rsp);
 
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Topic Publishers
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-    /*!
-     * \brief Publish robot status and extended robot status topics.
-     */
-    void publishRobotStatus();
 
     /*!
      * \brief Publish IMU sensor topics.
@@ -264,14 +217,6 @@ namespace jenny_controller
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Subscribed Topic Callbacks
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-    /*!
-     * \brief Execute set velocities subscibed topic callback.
-     *
-     * \param msgVel  Velocity message.
-     */
-    void execSetVelocities(const jenny_control::Velocity &msgVel);
-
 
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Utilities
@@ -289,7 +234,7 @@ namespace jenny_controller
                      const std::string &strFrameId = "0");
   };
 
-} // namespace jenny_controller
+} // namespace jenny_imu
 
 
-#endif // _JENNY_CONTROLLER_H
+#endif // _JENNY_IMU_H
