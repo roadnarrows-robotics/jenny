@@ -67,8 +67,10 @@ static void RS160Glob()
   KMotDevCnt = i;
 }
 
-int RS160DOpen(const char *sDevice, int &fd)
+int RS160DOpen(const char *sDevice)
 {
+  int   fd;
+
   fd = SerDevOpen(sDevice, BAUDRATE, 8, 'N', 1, false, false);
 
   return fd;
@@ -113,15 +115,16 @@ int WriteToSerial(const char *ControlString, int Descriptor) {
   return 0;
 }
 
-void SerWriteErrCheck( int err){
+void SerWriteErrCheck( int err)
+{
   if(err == -1) {
-    fprintf(stderr, "Complete serial write failure.\n");
+    LOGERROR("Complete serial write failure.");
   }
   if(err == -2) {
-    fprintf(stderr, "Nothing Written.\n");
+    LOGERROR("Nothing Written.");
   }
   if(err == -3) {
-    fprintf(stderr, "Incorrect number of bytes written.\n");
+    LOGERROR("Incorrect number of bytes written.");
   }
 }
 
@@ -130,73 +133,84 @@ int RS160DSetToSerial(int Descriptor)
   int err;
   err = WriteToSerial( SETLEFTSERIAL, Descriptor);
   if(err < 0) {
-    fprintf(stderr, "Failed to set left motor to serial control.\n");
+    LOGERROR("Failed to set left motor to serial control.");
     SerWriteErrCheck(err);
     return -1;
   }
   err = WriteToSerial( SETRIGHTSERIAL, Descriptor);
   if(err < 0) {
-    fprintf(stderr, "Failed to set right motor to serial control.\n");
+    LOGERROR("Failed to set right motor to serial control.");
     SerWriteErrCheck(err);
     return -1;
   }
   err = WriteToSerial( SETLEFTPWM, Descriptor);
   if(err < 0) {
-    fprintf(stderr, "Failed to set left motor to PWM mode.\n");
+    LOGERROR("Failed to set left motor to PWM mode.");
     SerWriteErrCheck(err);
     return -1;
   }
   err = WriteToSerial( SETRIGHTPWM, Descriptor);
   if(err < 0) {
-    fprintf(stderr, "Failed to set right motor to PWM mode.\n");
+    LOGERROR("Failed to set right motor to PWM mode.");
     SerWriteErrCheck(err);
     return -1;
   }
   return 0;
 }
 
-int RS160DUpdateMotorSpeeds(int Speed, int Descriptor, int Side) {
+int RS160DUpdateMotorSpeeds(int Speed, int Descriptor, int Side)
+{
   char BuffToMotor[20];
   int err;
-  if(Speed > 250) {
-    fprintf(stderr, "Speed (%i) too high.\n", 
-             Speed);
-    return -1;
+
+  if(Speed > RS160D_MOTOR_SPEED_MAX)
+  {
+    LOGWARN("Speed (%i) too high.", Speed);
+    Speed = RS160D_MOTOR_SPEED_MAX;
   }
-  if(Speed < -250) {  
-    fprintf(stderr, "Speed (%i) too low.\n", 
-             Speed);
-    return -1;
+
+  if(Speed < RS160D_MOTOR_SPEED_MIN)
+  {
+    LOGWARNj("Speed (%i) too low.", Speed);
+    Speed = RS160D_MOTOR_SPEED_MIN;
   }
-  sprintf(BuffToMotor, "@%dst%d\r",
-           Side, Speed);
+
+  sprintf(BuffToMotor, "@%dst%d\r", Side, Speed);
+
   err = WriteToSerial(BuffToMotor, Descriptor);
-  if(err < 0) {
-    fprintf(stderr, "\nFailed to update motor speed.\n");
+
+  if(err < 0)
+  {
+    LOGERROR("Failed to update motor speed.");
     SerWriteErrCheck(err);
     return -2;
   }
   return 0;
 }
 
-int RS160DAlterBraking(int Braking, int Descriptor, int Side) {
+int RS160DAlterBraking(int Braking, int Descriptor, int Side)
+{
   char BuffToMotor[20];
   int err;
-  if(Braking > 31) {
-    fprintf(stderr, "Brake rate (%i) too high.\n", 
-             Braking);
-    return -1;
+
+  if(Braking > RS160D_MOTOR_BRAKE_MAX)
+  {
+    LOGWARN("Brake rate (%i) too high.", Braking);
+    Braking = RS160D_MOTOR_BRAKE_MAX;
   }
-  if(Braking < 0) {  
-    fprintf(stderr, "Brake rate (%i) too low.\n", 
-             Braking);
-    return -1;
+
+  if(Braking < RS160D_MOTOR_BRAKE_MIN)
+  {
+    LOGWARN("Brake rate (%i) too low.", Braking);
+    Braking = RS160D_MOTOR_BRAKE_MIN;
   }
-  sprintf(BuffToMotor, "@%dsB%d\r",
-           Side, Braking);
+
+  sprintf(BuffToMotor, "@%dsB%d\r", Side, Braking);
+
   err = WriteToSerial(BuffToMotor, Descriptor);
+
   if(err < 0) {
-    fprintf(stderr, "\nFailed to update brake rate.\n");
+    LOGERROR("Failed to update brake rate.");
     SerWriteErrCheck(err);
     return -2;
   }
@@ -206,40 +220,38 @@ int RS160DAlterBraking(int Braking, int Descriptor, int Side) {
 int RS160DAlterSlew(int Slew, int Descriptor, int Side) {
   char BuffToMotor[20];
   int err;
-  if(Slew > 90) {
-    fprintf(stderr, "Slew rate (%i) too high.\n", 
-             Slew);
-    return -1;
+
+  if(Slew > RS160D_MOTOR_SLEW_MAX)
+  {
+    LOGWARN("Slew rate (%i) too high.", Slew);
+    Slew = RS160D_MOTOR_SLEW_MAX;
   }
-  if(Slew < 0) {  
-    fprintf(stderr, "Slew rate (%i) too low.\n", 
-             Slew);
-    return -1;
+
+  if(Slew < RS160D_MOTOR_SLEW_MIN)
+  {
+    LOGWARN("Slew rate (%i) too low.", Slew);
+    Slew = RS160D_MOTOR_SLEW_MIN;
   }
-  sprintf(BuffToMotor, "@%dsS%d\r",
-           Side, Slew);
+
+  sprintf(BuffToMotor, "@%dsS%d\r", Side, Slew);
   err = WriteToSerial(BuffToMotor, Descriptor);
+
   if(err < 0) {
-    fprintf(stderr, "\nFailed to update slew rate.\n");
+    LOGERROR("Failed to update slew rate.");
     SerWriteErrCheck(err);
     return -2;
   }
   return 0;
 }
 
-void RS160DEStop(int DescriptorFront, int DescriptorRear){
-  WriteToSerial( "@0sS0\r", DescriptorFront );
-  WriteToSerial( "@1sS0\r", DescriptorFront );
-  WriteToSerial( "@0sS0\r", DescriptorRear );
-  WriteToSerial( "@1sS0\r", DescriptorRear );
-  WriteToSerial( "@0sB31\r", DescriptorFront );
-  WriteToSerial( "@1sB31\r", DescriptorFront );
-  WriteToSerial( "@0sB31\r", DescriptorRear );
-  WriteToSerial( "@1sB31\r", DescriptorRear );
-  WriteToSerial( "@0st0\r", DescriptorFront );
-  WriteToSerial( "@1st0\r", DescriptorFront );
-  WriteToSerial( "@0st0\r", DescriptorRear );
-  WriteToSerial( "@1st0\r", DescriptorRear );
+void RS160DEStop(int Descriptor)
+{
+  WriteToSerial( "@0sS0\r", Descriptor);
+  WriteToSerial( "@1sS0\r", Descriptor);
+  WriteToSerial( "@0sB31\r", Descriptor);
+  WriteToSerial( "@1sB31\r", Descriptor);
+  WriteToSerial( "@0st0\r", Descriptor);
+  WriteToSerial( "@1st0\r", Descriptor);
 }
 
 int RS160DClose(int Descriptor) {
@@ -247,9 +259,8 @@ int RS160DClose(int Descriptor) {
   SerDevFIFOOutputFlush(Descriptor);
   error = SerDevClose(Descriptor);
   if(error == -1) {
-    fprintf(stderr, "\nFailed to close device.\n");
+    LOGERROR("Failed to close device.");
     return -1;
   }
   return 0;
 }
-

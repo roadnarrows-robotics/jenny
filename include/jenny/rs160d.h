@@ -77,7 +77,7 @@ struct RS160Ds
   int m_fdRear;
 };
 
-extern int RS160DOpen(const char *sDevice, int &fd);
+extern int RS160DOpen(const char *sDevice);
 
 /*
   Function opens serial comunication with set port.
@@ -127,7 +127,7 @@ int RS160DAlterSlew(int Slew, int Descriptor, int Side);
   E-Stop Function to lock up all wheels ICE
   Needs to be passed: Both descriptors.
 */
-void RS160DEStop(int DescriptorFront, int DescriptorRear);
+void RS160DEStop(int Descriptor);
 
 /*
   Closing function to release a connection to a device.

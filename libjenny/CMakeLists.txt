@@ -36,6 +36,7 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${RN_LOGGING_COMPILE_FLAGS}")
 
 add_library(jenny
   src/naze32imu.cxx
+  src/robot.cxx
   src/rs160d.cxx
   src/utils.cxx
 )
