@@ -4,13 +4,13 @@
 //
 // Link:      https://github.com/roadnarrows-robotics/jenny
 //
-// ROS Node:  jenny_controller
+// ROS Node:  jenny_imu
 //
-// File:      jenny_controller_main.cpp
+// File:      jenny_imu_main.cpp
 //
 /*! \file
  *
- * \brief The ROS jenny_controller node class implementation.
+ * \brief The ROS jenny_imu node class implementation.
  *
  * \author Robin Knight (robin.knight@roadnarrows.com)
  */
@@ -45,11 +45,11 @@
 //
 // Node headers.
 //
-#include "jenny_controller.h"
+#include "jenny_imu.h"
 
 using namespace ::std;
 using namespace jenny;
-using namespace jenny_controller;
+using namespace jenny_imu;
 
 
 //. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 
@@ -68,8 +68,8 @@ using namespace jenny_controller;
 //
 // Data
 //
-const char *NodeName  = "jenny_controller"; ///< this ROS node's name
-static int  RcvSignal = NO_SIGNAL;          ///< received 'gracefull' signal
+const char *NodeName  = "jenny_imu"; ///< this ROS node's name
+static int  RcvSignal = NO_SIGNAL;   ///< received 'gracefull' signal
 
 
 
@@ -108,7 +108,7 @@ static OptsPgmInfo_T AppPgmInfo =
   "[ROSOPTIONS]",
 
   // synopsis
-  "The %P ROS node provides ROS control interfaces to the Jenny autonomous "
+  "The %P ROS node provides ROS IMU interfaces for the Jenny autonomous "
   "grocery cart",
   
   // long_desc 
@@ -142,7 +142,7 @@ static void sigHandler(int sig)
 }
 
 /*!
- *  \brief ROS Jenny controller node main.
+ *  \brief ROS Jenny imu node main.
  *
  * \param argc    Command-line argument count.
  * \param argv    Command-line argument list.
@@ -152,8 +152,8 @@ static void sigHandler(int sig)
 int main(int argc, char *argv[])
 {
   string  strNodeName;    // ROS-given node name
-  double  hz = 30.0;      // ROS loop rate
-  int     nMaxTries = 5;  // maximum tries
+  double  hz = 20.0;      // ROS loop rate
+  int     nMaxTries = 3;  // maximum tries
   int     rc;             // return code
 
   // 
@@ -193,14 +193,14 @@ int main(int argc, char *argv[])
   //
   // Create a jenny node object.
   //
-  JennyController  jenny(nh, hz);
+  JennyImu  imu(nh, hz);
 
   //
   // Connect to the Jenny.
   //
   for(int i = 0; i < nMaxTries; ++i)
   {
-    if( (rc = jenny.connect()) == JEN_OK )
+    if( (rc = imu.connect()) == JEN_OK )
     {
       stringstream ss;
       ss  << strNodeName << ": Connected to Jenny.";  
@@ -246,21 +246,21 @@ int main(int argc, char *argv[])
   //
   // Advertise services.
   //
-  jenny.advertiseServices();
+  imu.advertiseServices();
 
   ROS_INFO("%s: Services registered.", strNodeName.c_str());
 
   //
   // Advertise publishers.
   //
-  jenny.advertisePublishers();
+  imu.advertisePublishers();
   
   ROS_INFO("%s: Publishers registered.", strNodeName.c_str());
   
   //
   // Subscribed to topics.
   //
-  jenny.subscribeToTopics();
+  imu.subscribeToTopics();
   
   ROS_INFO("%s: Subscribed topics registered.", strNodeName.c_str());
 
@@ -280,11 +280,14 @@ int main(int argc, char *argv[])
   //
   while( (RcvSignal == NO_SIGNAL) && ros::ok() )
   {
+    // sense IMU state
+    imu.sense();
+
     // make any callbacks on pending ROS events
     ros::spinOnce(); 
 
     // publish all advertized topics
-    jenny.publish();
+    imu.publish();
 
     // sleep to keep at loop rate
     loop_rate.sleep();

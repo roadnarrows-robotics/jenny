@@ -117,10 +117,10 @@ add_executable(jenny_controller
   #src/jenny_control/jenny_gps_main.cpp
 #)
 
-#add_executable(jenny_imu
-  #src/jenny_control/jenny_imu.cpp
-  #src/jenny_control/jenny_imu_main.cpp
-#)
+add_executable(jenny_imu
+  src/jenny_imu/jenny_imu.cpp
+  src/jenny_imu/jenny_imu_main.cpp
+)
 
 #add_executable(jenny_teleop
   #  src/jenny_teleop/jenny_teleop.cpp
@@ -139,11 +139,11 @@ target_link_libraries(jenny_controller
 #  ${catkin_LIBRARIES}
 #)
 
-#target_link_libraries(jenny_imu 
-#  jenny
-#  ${rnr-jenny_LIBRARIES}
-#  ${catkin_LIBRARIES}
-#)
+target_link_libraries(jenny_imu 
+  jenny
+  ${rnr-jenny_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
 
 #target_link_libraries(jenny_teleop 
 #  jenny
@@ -153,7 +153,7 @@ target_link_libraries(jenny_controller
 
 add_dependencies(jenny_controller jenny_control_gencpp)
 #add_dependencies(jenny_gps jenny_control_gencpp)
-#add_dependencies(jenny_imu jenny_control_gencpp)
+add_dependencies(jenny_imu jenny_control_gencpp)
 #add_dependencies(jenny_teleop jenny_control_gencpp)
 
 install(
