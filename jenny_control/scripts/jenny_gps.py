@@ -14,6 +14,7 @@ def read_gps():
     session = gps.gps("localhost", "2947")
     session.stream(gps.WATCH_ENABLE | gps.WATCH_NEWSTYLE)
     navMsg = NavSatFix()
+    navMsg.header.frame_id = 'gpsRover'
     navStatus = NavSatStatus()
     navStatus.service  = NavSatStatus.SERVICE_GPS
     while not rospy.is_shutdown():
@@ -25,6 +26,7 @@ def read_gps():
             else:
                 navStatus.status = NavSatStatus.STATUS_NO_FIX
             navMsg.status = navStatus
+            navMsg.header.stamp = rospy.Time.now()
             rospy.loginfo(navMsg)
             pub.publish(navMsg)
             rate.sleep()
