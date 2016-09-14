@@ -175,6 +175,11 @@ int RS160DUpdateMotorSpeeds(int Speed, int Descriptor, int Side)
     Speed = RS160D_MOTOR_SPEED_MIN;
   }
 
+  if( Side == RS160D_MOTOR_RIGHT_ID )
+  {
+    Speed = -Speed;
+  }
+
   sprintf(BuffToMotor, "@%dst%d\r", Side, Speed);
 
   err = WriteToSerial(BuffToMotor, Descriptor);

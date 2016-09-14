@@ -106,7 +106,7 @@ JennyRobot::~JennyRobot()
 
 int JennyRobot::connect()
 {
-  int     rc;           // return code
+  int     rc = JEN_OK;    // return code
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   // Pre-connect requirements.
@@ -117,7 +117,7 @@ int JennyRobot::connect()
   //
   if( m_bIsConnected )
   {
-    LOGWARN("Laelaps already connected to hardware.");
+    LOGWARN("Jenny already connected to hardware.");
     return JEN_OK;
   }
 
@@ -147,7 +147,7 @@ int JennyRobot::connect()
   //
   if( rc == JEN_OK )
   {
-    rc = connMotorController("/dev/X");
+    rc = connMotorController("/dev/ttyS0");
   }
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -192,7 +192,7 @@ int JennyRobot::connect()
 
     freeze(); // place robot in a safe state
 
-    LOGDIAG1("Connected to Laelaps.");
+    LOGDIAG1("Connected to Jenny.");
   }
 
   return rc;
@@ -222,7 +222,7 @@ int JennyRobot::disconnect()
   m_bIsEStopped       = false;
   m_bAlarmState       = false;
 
-  LOGDIAG1("Disconnected from Laelaps.");
+  LOGDIAG1("Disconnected from Jenny.");
 
   return JEN_OK;
 }
@@ -245,7 +245,7 @@ int JennyRobot::estop()
 
   rc = JEN_OK;
 
-  LOGDIAG3("Laelaps emergency stopped.");
+  LOGDIAG3("Jenny emergency stopped.");
 
   return rc;
 }
@@ -261,7 +261,7 @@ int JennyRobot::resetEStop()
 
   rc = JEN_OK;
 
-  LOGDIAG3("Laelaps emergency stopped reset.");
+  LOGDIAG3("Jenny emergency stopped reset.");
 
   return rc;
 }
@@ -280,7 +280,7 @@ int JennyRobot::freeze()
   RS160DUpdateMotorSpeeds(0, m_fdMotorCtlr, RS160D_MOTOR_LEFT_ID);
   RS160DUpdateMotorSpeeds(0, m_fdMotorCtlr, RS160D_MOTOR_RIGHT_ID);
 
-  LOGDIAG3("Laelaps frozen at current position.");
+  LOGDIAG3("Jenny frozen at current position.");
 
   return JEN_OK;
 }
@@ -296,7 +296,7 @@ int JennyRobot::release()
   RS160DAlterBraking(RS160D_MOTOR_BRAKE_MIN, m_fdMotorCtlr,
       RS160D_MOTOR_RIGHT_ID);
 
-  LOGDIAG3("Laelaps motor drives released.");
+  LOGDIAG3("Jenny motor drives released.");
 
   return JEN_OK;
 }
@@ -329,6 +329,8 @@ int JennyRobot::move(const vector<string> &names,
     speed = RS160D_MOTOR_SPEED_MAX * velocities[i];
 
     RS160DUpdateMotorSpeeds(speed, m_fdMotorCtlr, motor);
+
+    LOGDIAG3("Motor %d: speed=%d.", motor, speed);
   }
 
   return JEN_OK;

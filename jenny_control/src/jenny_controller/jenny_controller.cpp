@@ -108,6 +108,17 @@ JennyController::~JennyController()
   disconnect();
 }
 
+int JennyController::connect()
+{
+  return m_robot.connect();
+}
+
+int JennyController::disconnect()
+{
+  return m_robot.disconnect();
+}
+
+
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 // Services
 // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -287,8 +298,8 @@ void JennyController::execJoy(const sensor_msgs::Joy &msgJoy)
   velLinear   = msgJoy.axes[1];
   velAngular  = msgJoy.axes[3];
 
-  velLeft   = velLinear - velAngular;
-  velRight  = velLinear + velAngular;
+  velLeft   = velLinear + velAngular;
+  velRight  = velLinear - velAngular;
 
   // calculate divider
   if( fabs(velLeft) > 1.0 )

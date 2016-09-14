@@ -112,20 +112,14 @@ namespace jenny_controller
      *
      * \return Returns JEN_OK of success, \h_lt 0 on failure.
      */
-    int connect()
-    {
-      return m_robot.connect();
-    }
+    int connect();
 
     /*!
      * \brief Disconnect from Jenny robot.
      *
      * \return Returns JEN_OK of success, \h_lt 0 on failure.
      */
-    int disconnect()
-    {
-      return m_robot.disconnect();
-    }
+    int disconnect();
 
     /*!
      * \brief Advertise all server services.
