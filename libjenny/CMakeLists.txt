@@ -38,6 +38,8 @@ add_library(jenny
   src/naze32imu.cxx
   src/robot.cxx
   src/rs160d.cxx
+  src/threadUss.cxx
+  src/uss.cxx
   src/utils.cxx
 )
 

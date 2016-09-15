@@ -32,6 +32,8 @@
 #include "jenny/jenny.h"
 #include "jenny/utils.h"
 #include "jenny/rs160d.h"
+#include "jenny/uss.h"
+#include "jenny/threadUss.h"
 
 namespace jenny
 {
@@ -270,9 +272,11 @@ namespace jenny
     double          m_fGovernor;        ///< speed limit governor setting
 
     // hardware
-    int   m_fdMotorCtlr;        ///< motor controller file descriptor
+    int                   m_fdMotorCtlr;  ///< motor controller file descriptor
+    sensor::uss::JennyUss m_uss;          ///< ultrasonic sensors
 
     // threads
+    ThreadUss     m_threadUss;
 
     // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
     // Hardare Connection and Configuration Methods.

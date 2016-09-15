@@ -6,9 +6,9 @@
 //
 /*! \file
  *
- * \brief Laelaps built-in Inertial Measurement Unit class interface.
+ * \brief Jenny built-in Inertial Measurement Unit class interface.
  *
- * The current Laelaps uses the open-source CleanFlight firmware loaded
+ * The current Jenny uses the open-source CleanFlight firmware loaded
  * on a Naze32 controller. The interface is serial USB.
  *
  * \sa https://github.com/cleanflight

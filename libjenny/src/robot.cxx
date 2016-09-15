@@ -34,11 +34,14 @@
 #include "jenny/jenny.h"
 #include "jenny/utils.h"
 #include "jenny/rs160d.h"
+#include "jenny/uss.h"
+#include "jenny/threadUss.h"
 #include "jenny/robot.h"
 
 using namespace std;
 using namespace rnr;
 using namespace jenny;
+using namespace sensor::uss;
 
 /*!
  * \brief Test for connection.
@@ -83,7 +86,8 @@ using namespace jenny;
 
 const double JennyRobot::GovernorDft = 1.0;
 
-JennyRobot::JennyRobot()
+JennyRobot::JennyRobot() :
+  m_threadUss(m_uss)
 {
   int   nCtlr;
 
@@ -210,6 +214,7 @@ int JennyRobot::disconnect()
   //
   // Terminate all threads.
   //
+  m_threadUss.terminateThread();
 
   //
   // Close connections
@@ -424,7 +429,23 @@ bool JennyRobot::canMove()
 
 int JennyRobot::connSensors()
 {
-  return JEN_OK;
+  int   rc;
+
+  LOGDIAG3("Sleeping for 2 seconds.");
+
+  usleep(2000000);
+
+  if( (rc = m_uss.open()) < 0 )
+  {
+    LOGSYSERROR("Failed to open serial connection to USS arduino.");
+  }
+
+  else
+  {
+    LOGDIAG2("Opened connection with USS arduino.");
+  }
+
+  return rc;
 }
 
 int JennyRobot::connMotorController(const std::string &strDevMotorCtlr)
@@ -474,15 +495,15 @@ int JennyRobot::startCoreThreads()
   int     rc;
 
   //
-  // WatchDog thread.
+  // USS thread.
   //
-  //nPriority = LaeThreadWd::ThreadWdPrioDft;
-  //fHz       = LaeThreadWd::optimizeHz(m_tunes.getWatchDogTimeout());
+  nPriority = 50;
+  fHz       = 20.0;
 
-  //if( (rc = startThread(&m_threadWatchDog, nPriority, fHz)) != JEN_OK )
-  //{
-  //  return rc;
-  //}
+  if( (rc = startThread(&m_threadUss, nPriority, fHz)) != JEN_OK )
+  {
+    return rc;
+  }
 
   return JEN_OK;
 }
@@ -511,4 +532,3 @@ int JennyRobot::startThread(Thread *pThread, int nPriority, double fHz)
 
   return rc;
 }
-
