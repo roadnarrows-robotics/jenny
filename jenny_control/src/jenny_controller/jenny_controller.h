@@ -44,6 +44,7 @@
 #include "industrial_msgs/TriState.h"
 #include "industrial_msgs/RobotStatus.h"
 #include "sensor_msgs/Joy.h"
+#include "autorally_msgs/chassisCommand.h"
 
 //
 // ROS generated Jenny messages.
@@ -73,6 +74,8 @@
 #include "jenny/jenny.h"
 #include "jenny/utils.h"
 #include "jenny/robot.h"
+
+#define MAX_SPEED 0.5
 
 namespace jenny_controller
 {
@@ -246,6 +249,13 @@ namespace jenny_controller
      * \param msgVel  Velocity message.
      */
     void execJoy(const sensor_msgs::Joy &msgJoy);
+
+    /*!
+     * \brief Execute waypoint follower chassis commands subscibed topic callback.
+     *
+     * \param msgWP  WayPoint message.
+     */
+    void execWayPointChassisCommand(const autorally_msgs::chassisCommand &msgWP);
 
     /*!
      * \brief Execute set velocities subscibed topic callback.

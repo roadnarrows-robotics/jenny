@@ -49,6 +49,7 @@
 #include "industrial_msgs/TriState.h"
 #include "industrial_msgs/RobotStatus.h"
 #include "sensor_msgs/Joy.h"
+#include "autorally_msgs/chassisCommand.h"
 
 //
 // ROS generated Jenny messages.
@@ -281,6 +282,11 @@ void JennyController::subscribeToTopics(int nQueueDepth)
   m_subscriptions[strSub] = m_nh.subscribe(strSub, nQueueDepth,
                                           &JennyController::execSetVelocities,
                                           &(*this));
+
+  strSub = "/wayPointFollower/chassisCommand";
+  m_subscriptions[strSub] = m_nh.subscribe(strSub, nQueueDepth,
+                                          &JennyController::execWayPointChassisCommand,
+                                          &(*this));
 }
 
 void JennyController::execJoy(const sensor_msgs::Joy &msgJoy)
@@ -300,6 +306,45 @@ void JennyController::execJoy(const sensor_msgs::Joy &msgJoy)
 
   velLeft   = velLinear + velAngular;
   velRight  = velLinear - velAngular;
+
+  // calculate divider
+  if( fabs(velLeft) > 1.0 )
+  {
+    div = fabs(velLeft);
+  }
+  else if( fabs(velRight) > 1.0 )
+  {
+    div = fabs(velRight);
+  }
+  else
+  {
+    div = 1.0;
+  }
+
+  // normalize speed [-1.0, 1.0]
+  velLeft  = fcap(velLeft/div,  -1.0, 1.0);
+  velRight = fcap(velRight/div, -1.0, 1.0);
+
+  names.push_back("left");
+  velocities.push_back(velLeft);
+  names.push_back("right");
+  velocities.push_back(velRight);
+
+  m_robot.move(names, velocities);
+}
+
+void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCommand &msgWP)
+{
+   
+  double velAngular;
+  double velLeft, velRight;
+  double div;
+  vector<string>  names;
+  vector<double>  velocities;
+
+  velAngular = msgWP.steering;
+  velLeft = MAX_SPEED - velAngular;
+  velRight = MAX_SPEED + velAngular;
 
   // calculate divider
   if( fabs(velLeft) > 1.0 )
