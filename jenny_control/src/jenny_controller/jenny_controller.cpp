@@ -100,8 +100,30 @@ static boost::array<double, 9> ZeroCovariance = {0.0, };
 //------------------------------------------------------------------------------
 
 JennyController::JennyController(ros::NodeHandle &nh, double hz) :
-    m_nh(nh), m_hz(hz)
+    m_nh(nh), m_hz(hz), m_maxSpeed(0.25), 
+    m_turnDamp(0.5), m_speedDamp(0.5),
+    m_horizon(100.0), m_usWeight(0.5)
 {
+  if(m_nh.getParam("maxSpeed", m_maxSpeed))
+  {
+    ROS_INFO("Setting Max Speed: %f", m_maxSpeed);
+  }
+  if(m_nh.getParam("turnDamp", m_turnDamp))
+  {
+    ROS_INFO("Setting Turn Damp: %f", m_turnDamp);
+  }
+  if(m_nh.getParam("turnDamp", m_turnDamp))
+  {
+    ROS_INFO("Setting Speed Damp: %f", m_speedDamp);
+  }
+  if(m_nh.getParam("horizon", m_horizon))
+  {
+    ROS_INFO("Setting Horizon: %f", m_horizon);
+  }
+  if(m_nh.getParam("usWeight", m_usWeight))
+  {
+    ROS_INFO("Setting USS Weight: %f", m_usWeight);
+  }
 }
 
 JennyController::~JennyController()
@@ -339,12 +361,40 @@ void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCo
   double velAngular;
   double velLeft, velRight;
   double div;
+  double dampSpeed;
+  double usSteer;
+  double finalSpeed;
+
   vector<string>  names;
   vector<double>  velocities;
+  vector<double>  usReadings;
+  vector<double>  steerWeights;
+
+  m_nh.getParam("maxSpeed", m_maxSpeed);
+  m_nh.getParam("turnDamp", m_turnDamp);
+  m_nh.getParam("speedDamp", m_speedDamp);
 
   velAngular = msgWP.steering;
-  velLeft = MAX_SPEED - velAngular;
-  velRight = MAX_SPEED + velAngular;
+  //usReadings = m_robot.getUSSReadings();
+  for(int i=0; i<5; i++)
+  {
+    double val = (m_horizon - usReadings[i])/m_horizon;
+    if(val <= 0)
+    {
+      val = 0.0;
+    }
+    steerWeights[i] = val;
+  }
+
+  usSteer = (steerWeights[0] + steerWeights[1] 
+                   - steerWeights[3] - steerWeights[4])/4.0;
+  usSteer *= m_usWeight;
+  velAngular += usSteer;
+  dampSpeed = m_maxSpeed - fabs(velAngular)*m_turnDamp;
+  finalSpeed = dampSpeed - steerWeights[2]*m_speedDamp;
+
+  velLeft = finalSpeed - velAngular;
+  velRight = finalSpeed + velAngular;
 
   // calculate divider
   if( fabs(velLeft) > 1.0 )

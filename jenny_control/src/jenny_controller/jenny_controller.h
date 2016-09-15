@@ -75,8 +75,6 @@
 #include "jenny/utils.h"
 #include "jenny/robot.h"
 
-#define MAX_SPEED 0.5
-
 namespace jenny_controller
 {
   /*!
@@ -182,6 +180,11 @@ namespace jenny_controller
     ros::NodeHandle      &m_nh;     ///< the node handler bound to this instance
     double                m_hz;     ///< application nominal loop rate
     jenny::JennyRobot     m_robot;  ///< real-time, Jenny autonmouse robot
+    double                m_maxSpeed; ///< max speed for autonomous driving
+    double                m_turnDamp; ///< damping factor for turning autonomous
+    double                m_speedDamp; ///< damping factor for speed based on USS
+    double                m_horizon; ///< horizon for USS
+    double                m_usWeight; ///< weight factor for USS Steering
 
     // ROS services, publishers, subscriptions.
     MapServices       m_services;       ///< server services
