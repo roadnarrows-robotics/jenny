@@ -71,7 +71,8 @@ int RS160DOpen(const char *sDevice)
 {
   int   fd;
 
-  fd = SerDevOpen(sDevice, BAUDRATE, 8, 'N', 1, false, false);
+  //fd = SerDevOpen(sDevice, BAUDRATE, 8, 'N', 1, false, false);
+  fd = SerDevOpen(sDevice, 9600, 8, 'N', 1, false, false);
 
   return fd;
 }

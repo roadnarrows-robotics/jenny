@@ -293,7 +293,7 @@ void JennyController::execJoy(const sensor_msgs::Joy &msgJoy)
   vector<string>  names;
   vector<double>  velocities;
 
-  ROS_DEBUG("%s/%s", m_nh.getNamespace().c_str(), topic);
+  ROS_INFO("%s/%s", m_nh.getNamespace().c_str(), topic);
 
   velLinear   = msgJoy.axes[1];
   velAngular  = msgJoy.axes[3];
