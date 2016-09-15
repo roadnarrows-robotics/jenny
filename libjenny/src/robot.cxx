@@ -151,7 +151,7 @@ int JennyRobot::connect()
   //
   if( rc == JEN_OK )
   {
-    rc = connMotorController("/dev/ttyS0");
+    rc = connMotorController("/dev/kmot1");
   }
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

@@ -2,6 +2,9 @@
 # Jenny udev rules
 #
 
+# Keyspan USB to serial 
+ATTRS{idVendor}=="06cd",ATTRS{idProduct}=="0121",MODE="666",SYMLINK+="kmot%n"
+
 # USB IMU device
 ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",MODE="666",SYMLINK+="imu"
 

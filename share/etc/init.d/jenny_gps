@@ -25,7 +25,7 @@ SERVICE=jenny_gps
 ROSPKG=jenny_control
 ROSNODE=jenny_gps.py
 
-DAEMON=$(find_ros_node "${LD_LIBRARY_PATH}" ${ROSPKG} ${ROSNODE})
+DAEMON="/opt/rnr_ros/indigo/src/jenny/jenny_control/scripts/jenny_gps.py"
 PIDFILE=/var/run/${SERVICE}.pid
 LOGFILE=/var/log/${SERVICE}.log
 
@@ -40,7 +40,7 @@ test -x "${DAEMON}" || exit 0
 #
 is_daemon_running()
 {
-  /bin/ps -ef | /bin/grep "${DAEMON}" 2>/dev/null | /bin/grep --quiet -v grep
+  /bin/ps -ef | /bin/grep "${jenny_gps.py}" 2>/dev/null | /bin/grep --quiet -v grep
   return $?
 }
 
