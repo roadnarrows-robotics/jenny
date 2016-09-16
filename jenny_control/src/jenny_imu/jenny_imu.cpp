@@ -267,7 +267,7 @@ void JennyImu::publishImu()
   //
   // Publish messages
   //
-  m_publishers["imu_data"].publish(m_msgImu);
+  m_publishers["/imu/imu"].publish(m_msgImu);
 }
 
 
