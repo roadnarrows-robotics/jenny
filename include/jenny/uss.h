@@ -151,6 +151,7 @@ namespace sensor
       //
       char    m_bufInput[UssMaxLineLen];
       int     m_nCursor;
+      int     m_nErrorCnt;
 
       //
       // Sensor data

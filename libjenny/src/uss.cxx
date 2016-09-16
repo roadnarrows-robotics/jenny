@@ -111,7 +111,8 @@ int JennyUss::close()
 
 void JennyUss::zeroData()
 {
-  m_nCursor = 0;
+  m_nCursor   = 0;
+  m_nErrorCnt = 0;
 
   for(size_t i=0; i<NumOfUss; ++i)
   {
@@ -129,6 +130,12 @@ void JennyUss::readSensors()
     return;
   }
 
+  if( m_nErrorCnt > 80 )
+  {
+    close();
+    return;
+  }
+
   lockIo();
 
   while( bGetInput )
@@ -138,9 +145,11 @@ void JennyUss::readSensors()
     switch( c )
     {
       case -1:
+        ++m_nErrorCnt;
         bGetInput = false;
         break;
       case '\n':
+        m_nErrorCnt = 0;
         m_bufInput[m_nCursor] = 0;
         //fprintf(stderr, "DBG: %s\n", m_bufInput);
         parseInput();
@@ -148,6 +157,7 @@ void JennyUss::readSensors()
         bGetInput = false;
         break;
       default:
+        m_nErrorCnt = 0;
         if( m_nCursor < UssMaxLineLen-1 )
         {
           m_bufInput[m_nCursor++] = (char)c;

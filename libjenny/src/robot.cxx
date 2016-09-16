@@ -445,7 +445,8 @@ int JennyRobot::connSensors()
     LOGDIAG2("Opened connection with USS arduino.");
   }
 
-  return rc;
+  //return rc;
+  return JEN_OK;
 }
 
 int JennyRobot::connMotorController(const std::string &strDevMotorCtlr)
@@ -497,12 +498,15 @@ int JennyRobot::startCoreThreads()
   //
   // USS thread.
   //
-  nPriority = 50;
-  fHz       = 30.0;
-
-  if( (rc = startThread(&m_threadUss, nPriority, fHz)) != JEN_OK )
+  if( m_uss.isOpen() )
   {
-    return rc;
+    nPriority = 80;
+    fHz       = 35.0;
+
+    if( (rc = startThread(&m_threadUss, nPriority, fHz)) != JEN_OK )
+    {
+      return rc;
+    }
   }
 
   return JEN_OK;

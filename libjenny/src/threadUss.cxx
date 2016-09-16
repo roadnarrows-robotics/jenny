@@ -52,5 +52,8 @@ ThreadUss::~ThreadUss()
 
 void ThreadUss::exec()
 {
-  m_hwif.readSensors();
+  if( m_hwif.isOpen() )
+  {
+    m_hwif.readSensors();
+  }
 }
