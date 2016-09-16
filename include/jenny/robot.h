@@ -263,6 +263,16 @@ namespace jenny
      */
     bool canMove();
 
+    /*!
+     * \brief Get latest ultrasonic sensor readings.
+     *
+     * \return Vector of measurements.
+     */
+    std::vector<double> getUSSReadings()
+    {
+      return m_uss.getUssData();
+    }
+
   protected:
     // state
     bool            m_bIsConnected;     ///< critical hardware [not] connected

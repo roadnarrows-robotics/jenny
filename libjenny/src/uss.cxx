@@ -36,8 +36,7 @@ using namespace sensor::uss;
 // JennyUss Virtual Base Class
 //------------------------------------------------------------------------------
  
-JennyUss::JennyUss() :
-  m_vecMeas(5, 0.0)
+JennyUss::JennyUss() : m_vecMeas(5, 0.0)
 {
   m_fd = -1;
 
@@ -103,6 +102,8 @@ int JennyUss::close()
   m_strDevName.clear();
   m_nBaudRate = 0;
   m_fd        = -1;
+
+  zeroData();
 
   unlockIo();
 
@@ -229,11 +230,7 @@ void JennyUss::parseMeasurement(int nStart)
   } 
 }
 
-void JennyUss::getUssData(vector<double> &vecMeas)
+vector<double> JennyUss::getUssData()
 {
-  lockIo();
-
-  vecMeas = m_vecMeas;
-
-  unlockIo();
+  return m_vecMeas;
 }

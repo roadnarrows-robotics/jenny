@@ -375,7 +375,9 @@ void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCo
   m_nh.getParam("speedDamp", m_speedDamp);
 
   velAngular = msgWP.steering;
-  //usReadings = m_robot.getUSSReadings();
+
+  usReadings = m_robot.getUSSReadings();
+
   for(int i=0; i<5; i++)
   {
     double val = (m_horizon - usReadings[i])/m_horizon;

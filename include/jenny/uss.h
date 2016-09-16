@@ -134,9 +134,9 @@ namespace sensor
       /*!
        * \brief Get the last sensed USS data.
        *
-       * \param [out] vecMeas Distance measurements.
+       * \return Vector of distance measurements.
        */
-      virtual void getUssData(std::vector<double> &vecMeas);
+      virtual std::vector<double> getUssData();
 
     protected:
       //
