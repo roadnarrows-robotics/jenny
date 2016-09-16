@@ -19,6 +19,7 @@ def read_gps():
     navStatus.service  = NavSatStatus.SERVICE_GPS
     while not rospy.is_shutdown():
         try:
+            session.next()
             navMsg.latitude = session.fix.latitude
             navMsg.longitude = session.fix.longitude
             if(session.status > 0):

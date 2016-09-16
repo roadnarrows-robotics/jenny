@@ -215,7 +215,7 @@ void JennyImu::advertisePublishers(int nQueueDepth)
   string  strPub;
 
   // topic conforms to the robot_pose_ekf ROS node
-  strPub = "imu_data";
+  strPub = "/imu/imu";
   m_publishers[strPub] =
     m_nh.advertise<sensor_msgs::Imu>(strPub, nQueueDepth);
 }

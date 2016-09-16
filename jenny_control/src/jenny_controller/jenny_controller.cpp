@@ -305,7 +305,7 @@ void JennyController::subscribeToTopics(int nQueueDepth)
                                           &JennyController::execSetVelocities,
                                           &(*this));
 
-  strSub = "/wayPointFollower/chassisCommand";
+  strSub = "/waypointFollower/chassisCommand";
   m_subscriptions[strSub] = m_nh.subscribe(strSub, nQueueDepth,
                                           &JennyController::execWayPointChassisCommand,
                                           &(*this));
