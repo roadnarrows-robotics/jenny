@@ -151,7 +151,7 @@ int JennyRobot::connect()
   //
   if( rc == JEN_OK )
   {
-    rc = connMotorController("/dev/kmot1");
+    rc = connMotorController("/dev/kmot");
   }
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -498,7 +498,7 @@ int JennyRobot::startCoreThreads()
   // USS thread.
   //
   nPriority = 50;
-  fHz       = 20.0;
+  fHz       = 30.0;
 
   if( (rc = startThread(&m_threadUss, nPriority, fHz)) != JEN_OK )
   {

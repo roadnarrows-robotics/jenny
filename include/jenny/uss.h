@@ -49,7 +49,7 @@ namespace sensor
       NumOfUss    = 5     ///< number of sensors
     };
   
-    static const char  *UssDevNameDft   = "/dev/ttyACM0";
+    static const char  *UssDevNameDft   = "/dev/uss";
     static const int    UssBaudRateDft  = 115200;
   
     static const size_t UssMaxLineLen   = 80;   ///< include NL or NULL

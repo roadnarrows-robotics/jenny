@@ -133,7 +133,7 @@ void JennyUss::readSensors()
 
   while( bGetInput )
   {
-    c = SerDevGetc(m_fd, UssTimeoutUsec);
+    c = SerDevGetc(m_fd, 1000); //UssTimeoutUsec);
 
     switch( c )
     {

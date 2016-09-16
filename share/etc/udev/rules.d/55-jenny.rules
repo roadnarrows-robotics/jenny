@@ -1,21 +1,21 @@
 # 
 # Jenny udev rules
 #
-
+# Arduino USS
 # Keyspan USB to serial 
-ATTRS{idVendor}=="06cd",ATTRS{idProduct}=="0121",MODE="666",SYMLINK+="kmot%n"
-
 # USB IMU device
+# U-Blox AG GPS device
+# Front Creative USB 2.0 720p web camera with microphone.
+#
+
+SUBSYSTEM=="tty",ATTRS{idVendor}=="2341",ATTRS{idProduct}=="8036",MODE="666",SYMLINK+="uss"
+
+ATTRS{idVendor}=="06cd",ATTRS{idProduct}=="0121",MODE="666",SYMLINK+="kmot"
+
 ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",MODE="666",SYMLINK+="imu"
 
-# U-Blox AG GPS device
 ATTRS{idVendor}=="1546",ATTRS{idProduct}=="01a7",MODE="666",SYMLINK+="gps"
 
-#
-# Supported Cameras
-#
-
-# Front Creative USB 2.0 720p web camera with microphone.
 KERNEL=="video[0-9]*",ATTRS{idVendor}=="041e",ATTRS{idProduct}=="4097",MODE="666",SYMLINK+="fcam"
 
 
