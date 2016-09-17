@@ -131,6 +131,10 @@ void SerWriteErrCheck( int err)
 int RS160DSetToSerial(int Descriptor)
 {
   int err;
+
+  // get out cal
+  WriteToSerial("\033", Descriptor);
+
   err = WriteToSerial( SETLEFTSERIAL, Descriptor);
   if(err < 0) {
     LOGERROR("Failed to set left motor to serial control.");
