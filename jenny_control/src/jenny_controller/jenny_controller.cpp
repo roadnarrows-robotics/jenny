@@ -112,7 +112,7 @@ JennyController::JennyController(ros::NodeHandle &nh, double hz) :
   {
     ROS_INFO("Setting Turn Damp: %f", m_turnDamp);
   }
-  if(m_nh.getParam("turnDamp", m_turnDamp))
+  if(m_nh.getParam("speedDamp", m_speedDamp))
   {
     ROS_INFO("Setting Speed Damp: %f", m_speedDamp);
   }
