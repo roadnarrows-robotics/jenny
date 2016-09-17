@@ -131,7 +131,7 @@ void SerWriteErrCheck( int err)
 int RS160DSetToSerial(int Descriptor)
 {
   int     err;
-  byte_t  buf[80];
+  byte_t  buf[1028];
   ssize_t n;
 
   // get out cal
@@ -162,14 +162,14 @@ int RS160DSetToSerial(int Descriptor)
     return -1;
   }
 
-  WriteToSerial("T\r", Descriptor);
+  WriteToSerial("p\r", Descriptor);
 
   n = SerDevRead(Descriptor, buf, sizeof(buf)-1, 10000);
 
   if( n > 0 )
   {
     buf[n] = 0;
-    LOGDIAG2("Motor controller temperature: %s\n", buf);
+    LOGDIAG2("Motor ctlr short summary: %s\n", buf);
   }
 
   return 0;
