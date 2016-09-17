@@ -162,15 +162,15 @@ int RS160DSetToSerial(int Descriptor)
     return -1;
   }
 
-  WriteToSerial("p\r", Descriptor);
+  //WriteToSerial("p\r", Descriptor);
 
-  n = SerDevRead(Descriptor, buf, sizeof(buf)-1, 10000);
+  //n = SerDevRead(Descriptor, buf, sizeof(buf)-1, 10000);
 
-  if( n > 0 )
-  {
-    buf[n] = 0;
-    LOGDIAG2("Motor ctlr short summary: %s\n", buf);
-  }
+  //if( n > 0 )
+  //{
+  //  buf[n] = 0;
+  //  LOGDIAG2("Motor ctlr short summary: %s\n", buf);
+  //}
 
   return 0;
 }
