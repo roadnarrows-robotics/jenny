@@ -100,9 +100,9 @@ static boost::array<double, 9> ZeroCovariance = {0.0, };
 //------------------------------------------------------------------------------
 
 JennyController::JennyController(ros::NodeHandle &nh, double hz) :
-    m_nh(nh), m_hz(hz), m_maxSpeed(0.25), 
-    m_turnDamp(0.5), m_speedDamp(0.5),
-    m_horizon(100.0), m_usWeight(0.5)
+    m_nh(nh), m_hz(hz), m_maxSpeed(1.0), 
+    m_turnDamp(0.0), m_speedDamp(0.75),
+    m_horizon(100.0), m_usWeight(1.0)
 {
   if(m_nh.getParam("maxSpeed", m_maxSpeed))
   {
@@ -357,7 +357,6 @@ void JennyController::execJoy(const sensor_msgs::Joy &msgJoy)
 
 void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCommand &msgWP)
 {
-   
   double velAngular;
   double velLeft, velRight;
   double div;
@@ -375,21 +374,21 @@ void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCo
   m_nh.getParam("speedDamp", m_speedDamp);
 
   velAngular = msgWP.steering;
-
+//velAngular = 0.0;
   usReadings = m_robot.getUSSReadings();
 
-  for(int i=0; i<5; i++)
+  for(size_t i=0; i<usReadings.size(); i++)
   {
     double val = (m_horizon - usReadings[i])/m_horizon;
     if(val <= 0)
     {
       val = 0.0;
     }
-    steerWeights[i] = val;
+    steerWeights.push_back(val);
   }
 
-  usSteer = (steerWeights[0] + steerWeights[1] 
-                   - steerWeights[3] - steerWeights[4])/4.0;
+  usSteer = (steerWeights[3] + steerWeights[4] 
+                   - steerWeights[0] - steerWeights[1])/4.0;
   usSteer *= m_usWeight;
   velAngular += usSteer;
   dampSpeed = m_maxSpeed - fabs(velAngular)*m_turnDamp;
@@ -420,7 +419,7 @@ void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCo
   velocities.push_back(velLeft);
   names.push_back("right");
   velocities.push_back(velRight);
-
+  ROS_INFO("Left: %lf Right: %lf", velLeft, velRight);
   m_robot.move(names, velocities);
 }
 
