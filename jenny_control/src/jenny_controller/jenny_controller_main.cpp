@@ -288,6 +288,9 @@ int main(int argc, char *argv[])
 
     // sleep to keep at loop rate
     loop_rate.sleep();
+
+    // race
+    jenny.race();
   }
 
   return APP_EC_OK;

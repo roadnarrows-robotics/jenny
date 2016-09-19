@@ -101,8 +101,8 @@ static boost::array<double, 9> ZeroCovariance = {0.0, };
 
 JennyController::JennyController(ros::NodeHandle &nh, double hz) :
     m_nh(nh), m_hz(hz), m_maxSpeed(1.0), 
-    m_turnDamp(0.0), m_speedDamp(0.75),
-    m_horizon(100.0), m_usWeight(1.0)
+    m_wayDamp(1.0), m_turnDamp(0.0), m_speedDamp(0.75),
+    m_horizon(80.0), m_usWeight(1.0)
 {
   if(m_nh.getParam("maxSpeed", m_maxSpeed))
   {
@@ -124,6 +124,8 @@ JennyController::JennyController(ros::NodeHandle &nh, double hz) :
   {
     ROS_INFO("Setting USS Weight: %f", m_usWeight);
   }
+
+  m_doRace = false;
 }
 
 JennyController::~JennyController()
@@ -211,15 +213,26 @@ bool JennyController::setVelocities(SetVelocities::Request  &req,
 }
 
 bool JennyController::stop(Stop::Request  &req,
-                          Stop::Response &rsp)
+                           Stop::Response &rsp)
 {
   const char *svc = "stop";
   int         rc;
 
   ROS_DEBUG("%s/%s", m_nh.getNamespace().c_str(), svc);
 
-  rc = m_robot.stop();
+  if( m_doRace )
+  {
+    m_doRace = false;
+    rc = m_robot.stop();
+    ROS_INFO("RACE_STOP");
+  }
 
+  else
+  {
+    m_doRace = true;
+    ROS_INFO("RACE_START");
+  }
+  
   if( rc == JEN_OK )
   {
     ROS_INFO("Stopped.");
@@ -369,12 +382,13 @@ void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCo
   vector<double>  usReadings;
   vector<double>  steerWeights;
 
+  m_nh.getParam("wayDamp", m_wayDamp);
   m_nh.getParam("maxSpeed", m_maxSpeed);
   m_nh.getParam("turnDamp", m_turnDamp);
   m_nh.getParam("speedDamp", m_speedDamp);
+  m_nh.getParam("horizon", m_horizon);
 
-  velAngular = msgWP.steering;
-//velAngular = 0.0;
+  velAngular = msgWP.steering * m_wayDamp;
   usReadings = m_robot.getUSSReadings();
 
   for(size_t i=0; i<usReadings.size(); i++)
@@ -387,8 +401,13 @@ void JennyController::execWayPointChassisCommand(const autorally_msgs::chassisCo
     steerWeights.push_back(val);
   }
 
-  usSteer = (steerWeights[3] + steerWeights[4] 
-                   - steerWeights[0] - steerWeights[1])/4.0;
+  ROS_INFO("UltraSonics: %5.1lf %5.1lf %5.1lf %5.1lf %5.1lf",
+      steerWeights[0], steerWeights[1],
+      steerWeights[2], steerWeights[3],
+      steerWeights[4]);
+
+  usSteer = (steerWeights[0] + steerWeights[1] 
+                   - steerWeights[3] - steerWeights[4])/4.0;
   usSteer *= m_usWeight;
   velAngular += usSteer;
   dampSpeed = m_maxSpeed - fabs(velAngular)*m_turnDamp;
@@ -439,4 +458,84 @@ void JennyController::stampHeader(std_msgs::Header &header,
   header.seq      = nSeqNum;
   header.stamp    = ros::Time::now();
   header.frame_id = strFrameId;
+}
+
+void JennyController::race()
+{
+  double velAngular;
+  double velLeft, velRight;
+  double div;
+  double dampSpeed;
+  double usSteer;
+  double finalSpeed;
+
+  vector<string>  names;
+  vector<double>  velocities;
+  vector<double>  usReadings;
+  vector<double>  steerWeights;
+
+  if( !m_doRace )
+  {
+    return;
+  }
+
+  m_nh.getParam("wayDamp", m_wayDamp);
+  m_nh.getParam("maxSpeed", m_maxSpeed);
+  m_nh.getParam("turnDamp", m_turnDamp);
+  m_nh.getParam("speedDamp", m_speedDamp);
+  m_nh.getParam("horizon", m_horizon);
+
+  velAngular = 0.0;
+  usReadings = m_robot.getUSSReadings();
+
+  for(size_t i=0; i<usReadings.size(); i++)
+  {
+    double val = (m_horizon - usReadings[i])/m_horizon;
+    if(val <= 0)
+    {
+      val = 0.0;
+    }
+    steerWeights.push_back(val);
+  }
+
+  ROS_INFO("UltraSonics: %5.1lf %5.1lf %5.1lf %5.1lf %5.1lf",
+      steerWeights[0], steerWeights[1],
+      steerWeights[2], steerWeights[3],
+      steerWeights[4]);
+
+  usSteer = (steerWeights[0] - steerWeights[4])/2.0;
+  //usSteer = (steerWeights[0] + steerWeights[1] 
+  //                 - steerWeights[3] - steerWeights[4])/4.0;
+  usSteer *= m_usWeight;
+  velAngular += usSteer;
+  dampSpeed = m_maxSpeed - fabs(velAngular)*m_turnDamp;
+  finalSpeed = dampSpeed - steerWeights[2]*m_speedDamp;
+
+  velLeft = finalSpeed - velAngular;
+  velRight = finalSpeed + velAngular;
+
+  // calculate divider
+  if( fabs(velLeft) > 1.0 )
+  {
+    div = fabs(velLeft);
+  }
+  else if( fabs(velRight) > 1.0 )
+  {
+    div = fabs(velRight);
+  }
+  else
+  {
+    div = 1.0;
+  }
+
+  // normalize speed [-1.0, 1.0]
+  velLeft  = fcap(velLeft/div,  -1.0, 1.0);
+  velRight = fcap(velRight/div, -1.0, 1.0);
+
+  names.push_back("left");
+  velocities.push_back(velLeft);
+  names.push_back("right");
+  velocities.push_back(velRight);
+  ROS_INFO("Left: %lf Right: %lf", velLeft, velRight);
+  m_robot.move(names, velocities);
 }
